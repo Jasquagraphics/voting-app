@@ -1012,10 +1012,31 @@
         var by = b.bb.y + b.bb.height/2;
         return ay - by;
       });
-      var picked = iconEls.slice(0, count);
-      if(picked.length === count){
-        iconSlots = picked.map(function(it){ return it.bb; });
+      var slots = [];
+      for(var si=0; si<count; si++) slots.push(null);
+
+      var used = [];
+      for(var ui2=0; ui2<iconEls.length; ui2++) used.push(false);
+
+      for(var row=0; row<count; row++){
+        var cy = leds[row].cy;
+        var bestIdx = -1;
+        var bestD = 1e9;
+        for(var ii=0; ii<iconEls.length; ii++){
+          if(used[ii]) continue;
+          var ciy = iconEls[ii].bb.y + iconEls[ii].bb.height/2;
+          var d = Math.abs(ciy - cy);
+          if(d < bestD){
+            bestD = d;
+            bestIdx = ii;
+          }
+        }
+        if(bestIdx >= 0 && bestD <= 160){
+          used[bestIdx] = true;
+          slots[row] = iconEls[bestIdx].bb;
+        }
       }
+      iconSlots = slots;
     }
 
     var toHide = [];
@@ -1047,13 +1068,10 @@
 
       var slot = iconSlots && iconSlots[i] ? iconSlots[i] : null;
       if(slot){
-        var pad = 6;
-        var w = Math.max(1, slot.width - pad*2);
-        var h = Math.max(1, slot.height - pad*2);
-        iconImg.setAttribute("x", String(slot.x + pad));
-        iconImg.setAttribute("y", String(slot.y + pad));
-        iconImg.setAttribute("width", String(w));
-        iconImg.setAttribute("height", String(h));
+        iconImg.setAttribute("x", String(slot.x));
+        iconImg.setAttribute("y", String(slot.y));
+        iconImg.setAttribute("width", String(Math.max(1, slot.width)));
+        iconImg.setAttribute("height", String(Math.max(1, slot.height)));
       }else{
         var iconW = 260;
         var iconH = 200;
